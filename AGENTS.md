@@ -34,6 +34,9 @@ Port anything that is the product rather than the platform:
 Do **not** port the platform layer: JSX vs Compose, `styles.css` vs
 `ui/theme/Theme.kt`, routing, localStorage vs `SnapshotStore`. Match the
 behaviour, then write it the way the target codebase already writes things.
+**Presentation density may differ by platform:** the phone home screen can
+show a shorter default than the web dashboard, as long as the same figures
+and capabilities remain reachable.
 
 ### File map
 
