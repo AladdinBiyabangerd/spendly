@@ -449,6 +449,37 @@ describe('insights', () => {
     expect(insights(data, month).map((f) => f.id)).not.toContain('spend-change')
   })
 
+  it('does not invent a percentage from a near-empty previous period', () => {
+    // First week of use: a few fares, then a full month — 22 000% is true
+    // arithmetic and useless. Same for a category that went 1.80 → 9.95.
+    const data = build({
+      transactions: [
+        tx({ date: '2026-07-28', category: 'Nəqliyyat', amount: 1.8 }),
+        tx({ date: '2026-07-29', category: 'İşdə yemək', amount: 6 }),
+        tx({ date: '2026-08-05', category: 'Kreditlər', amount: 843.56 }),
+        tx({ date: '2026-08-06', category: 'Nəqliyyat', amount: 9.95 }),
+        tx({ date: '2026-08-07', category: 'Ərzaq', amount: 900 }),
+        tx({ date: '2026-08-01', type: 'income', category: 'Maaş', amount: 1800 }),
+      ],
+    })
+    const ids = insights(data, month).map((fact) => fact.id)
+    expect(ids).not.toContain('spend-change')
+    expect(ids.some((id) => id.startsWith('mover-'))).toBe(false)
+  })
+
+  it('still states a percentage when both periods are comparable', () => {
+    const data = build({
+      transactions: [
+        tx({ date: '2026-07-05', category: 'Ərzaq', amount: 200 }),
+        tx({ date: '2026-08-05', category: 'Ərzaq', amount: 280 }),
+      ],
+    })
+    const change = insights(data, month).find((fact) => fact.id === 'spend-change')!
+    expect(change.text).toContain('40%')
+    const mover = insights(data, month).find((fact) => fact.id === 'mover-Ərzaq')!
+    expect(mover.text).toContain('40%')
+  })
+
   it('names the largest category and its share', () => {
     const data = build({
       transactions: [tx({ category: 'Ərzaq', amount: 80 }), tx({ category: 'İdman', amount: 20 })],

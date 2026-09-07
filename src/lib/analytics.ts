@@ -440,6 +440,28 @@ export interface Insight {
 const MATERIAL_CHANGE = 0.1
 /** Below this, an amount is too small to be worth a line of the summary. */
 const MATERIAL_AMOUNT = 5
+/**
+ * When spending grew, the previous figure must be at least this share of the
+ * new one for a percentage to be a rate of change rather than a start.
+ * At 0.2 the largest reportable increase is 400% — above that the "previous
+ * period" was too thin to compare (first week of use, a single fare).
+ */
+const COMPARABLE_SHARE = 0.2
+
+/**
+ * Whether `previous → current` can support a percentage claim.
+ *
+ * A near-empty previous period against a full month produces ratios like
+ * 22 000% — arithmetic that is true and useless. The baseline has to be
+ * material in absolute terms, and on growth large enough relative to the
+ * new figure. Decreases from a solid base stay percentage-worthy even when
+ * the new figure is small.
+ */
+function canStatePercentChange(previous: number, current: number): boolean {
+  if (previous < MATERIAL_AMOUNT) return false
+  if (current > previous && previous < current * COMPARABLE_SHARE) return false
+  return true
+}
 
 /**
  * Deterministic observations, ordered by how much they matter.
@@ -482,7 +504,12 @@ export function insights(data: FinanceData, period: Period): Insight[] {
   }
 
   // Total spending against the comparable previous period.
-  if (hasHistory && before.expenses > 0 && now.expenses > 0) {
+  if (
+    hasHistory &&
+    before.expenses > 0 &&
+    now.expenses > 0 &&
+    canStatePercentChange(before.expenses, now.expenses)
+  ) {
     const ratio = (now.expenses - before.expenses) / before.expenses
     if (Math.abs(ratio) >= MATERIAL_CHANGE) {
       result.push({
@@ -530,7 +557,8 @@ export function insights(data: FinanceData, period: Period): Insight[] {
       (row) =>
         row.changeRatio !== null &&
         Math.abs(row.changeRatio) >= MATERIAL_CHANGE &&
-        Math.abs(row.actual - row.previous) >= MATERIAL_AMOUNT,
+        Math.abs(row.actual - row.previous) >= MATERIAL_AMOUNT &&
+        canStatePercentChange(row.previous, row.actual),
     )
     .sort(
       (a, b) => Math.abs(b.actual - b.previous) - Math.abs(a.actual - a.previous),
