@@ -171,6 +171,17 @@ export function AuthScreen() {
           )}
         </p>
       </form>
+      <p className="auth-builder">
+        Dizayn edib hazırlayan{' '}
+        <a
+          href="https://aladdinbiyabangerd.site/az?utm_source=spendly&utm_medium=organic_social&utm_campaign=portfolio&utm_content=auth_credit"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Aladdin Biyabangerd
+          <span aria-hidden> ↗</span>
+        </a>
+      </p>
     </div>
   )
 }

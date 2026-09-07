@@ -2245,8 +2245,10 @@ h1, h2, h3 {
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 14px;
   padding: 24px;
 }
 
@@ -2306,6 +2308,22 @@ h1, h2, h3 {
   font-weight: 600;
   color: var(--accent);
   cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.auth-builder {
+  margin: 0;
+  max-width: 380px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.auth-builder a {
+  font-weight: 600;
+  color: var(--text);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
